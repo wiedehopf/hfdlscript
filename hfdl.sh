@@ -102,7 +102,7 @@ j=0
 i=0
 for x in "${freq[@]}"
 do
-    if [ ${count[$i]} -gt ${count[$j]} ]
+    if (( ${count[$i]} > ${count[$j]} ))
     then
         j=$i
     fi
