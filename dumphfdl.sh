@@ -90,8 +90,8 @@ dumpcmd="/usr/local/bin/dumphfdl --statsd 192.168.1.156:8125
     --output decoded:text:file:path=/home/pi/hflog/hf.log \
     --output decoded:text:file:path=/home/pi/hflog/hfdl.log  "
 
-#if you have split the default frequency group arrays into more groups containing smaller spreads of frequencies or added a or removed a frequency array change the 3 to one digit less than the total number of arrays. Do not change the 0.
-for i in {0..3}
+i=0
+for x in "${freq[@]}"
 do
     if [ -f "/home/pi/hflog/hf.log" ]; then
         rm /home/pi/hflog/hf.log
@@ -100,18 +100,21 @@ do
     if [ -f "/home/pi/hflog/hf.log" ]; then
         count[$i]=`grep -c "Lat" /home/pi/hflog/hf.log`
     fi
+    (( i += 1 ))
 done
 
 j=0
 
-#if you have split the default frequency group arrays into more groups containing smaller spreads of frequencies or added or removed a frequency array change the 3 to one digit less than the total number of arrays. Do not change the 1.
-for i in {1..3}
+i=0
+for x in "${freq[@]}"
 do
-    if [ ${count[$i]} -gt ${count[j]} ]
+    if [ ${count[$i]} -gt ${count[$j]} ]
     then
         j=$i
     fi
+    (( i += 1 ))
 done
+
 #end of testing for active frequencies
 
 #Display the friendly name, gain elements, sample rate and active frequencies chosen by the script when running it manually in a terminal
