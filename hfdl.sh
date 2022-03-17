@@ -82,6 +82,11 @@ dumpcmd="/usr/local/bin/dumphfdl --statsd 192.168.1.156:8125
     --output decoded:text:file:path=/home/pi/hflog/hf.log \
     --output decoded:text:file:path=/home/pi/hflog/hfdl.log  "
 
+TIMEOUT="$1"
+if [[ -z "$TIMEOUT" ]]; then
+    TIMEOUT=90
+fi
+
 i=0
 count=()
 for x in "${freq[@]}"
@@ -90,7 +95,7 @@ do
     if [ -f "/home/pi/hflog/hf.log" ]; then
         rm /home/pi/hflog/hf.log
     fi
-    timeout $1 $dumpcmd --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} >/dev/null
+    timeout "$TIMEOUT" $dumpcmd --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} >/dev/null
     if [ -f "/home/pi/hflog/hf.log" ]; then
         count[$i]=`grep -c "Lat" /home/pi/hflog/hf.log`
     fi
