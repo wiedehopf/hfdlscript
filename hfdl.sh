@@ -90,8 +90,11 @@ dumpcmd+=( --freq-as-squawk )
 dumpcmd+=( --system-table /home/pi/dumphfdl/etc/systable.conf )
 dumpcmd+=( --system-table-save /home/pi/dumphfdl/etc/systable-new.conf )
 
-# change IP and port of your VRS or whatever is consuming the basestation / SBS output:
-dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=192.168.1.109,port=30093 )
+# output data into combine1090, add # in front of the line to deactivate
+dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=127.0.0.1,port=29109 )
+
+# output data into VRS, add # in front of the line to deactivate
+dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=127.0.0.1,port=20003 )
 
 # this shouldn't need changing
 TMPLOG="/tmp/hfdl.sh.log.tmp"
