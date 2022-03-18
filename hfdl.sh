@@ -18,6 +18,7 @@ trap 'echo "[ERROR] Error in line $LINENO when executing: $BASH_COMMAND"' ERR
 
 
 LOGFILE="/home/pi/hflog/hfdl.log"
+ERRORLOG="/home/pi/hflog/hfdl.error.log"
 
 # use tail -f /home/pi/hflog/hfdl.log to follow the output when the decoder is running
 
@@ -134,6 +135,7 @@ count=()
 positions=()
 score=()
 
+echo --------
 i=0
 for x in "${freq[@]}"
 do
@@ -142,14 +144,15 @@ do
     score+=(0)
     rm -f "$TMPLOG"
     timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} )
-    echo "running: ${timeoutcmd[@]}"
+    #echo "running: ${timeoutcmd[@]}"
     "${timeoutcmd[@]}" &> /dev/null || true
     if [[ -f "$TMPLOG" ]]; then
         count[$i]=$(grep -c "Src AC" "$TMPLOG")
         positions[$i]=$(grep -c "Lat:" "$TMPLOG")
         score=$(( SPM * positions[$i]  + count[$i] ))
     fi
-    echo "${fname[$i]} messageCount: ${count[$i]} positionCount: ${positions[$i]}"
+    echo -e "${fname[$i]}\tmessageCount: ${count[$i]}\tpositionCount: ${positions[$i]}"
+    echo --------
     (( i += 1 ))
 done
 
@@ -180,7 +183,9 @@ longcmd=( "${dumpcmd[@]}" --gain-elements ${gain[$j]} --sample-rate ${samp[$j]} 
 
 echo "------"
 echo "Running: ${longcmd[@]}"
+nohup "${longcmd[@]}" 2>"$ERRORLOG" >/dev/null &
 echo "------"
 
-"${longcmd[@]}" >/dev/null &
-
+echo "you can follow decoder startup and error messages using tail -f $ERRORLOG"
+echo "you can follow what is being decoded using tail -f $LOGFILE"
+echo "------"
