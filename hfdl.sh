@@ -113,7 +113,7 @@ do
     count+=(0)
     positions+=(0)
     rm -f "$TMPLOG"
-    timeoutcmd=(timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements "${gain[$i]}" --sample-rate "${samp[$i]}" "${freq[$i]}")
+    timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} )
     echo "running: ${timeoutcmd[@]}"
     "${timeoutcmd[@]}" >/dev/null
     if [[ -f "$TMPLOG" ]]; then
