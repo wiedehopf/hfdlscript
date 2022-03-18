@@ -15,6 +15,10 @@
 ###############################################################	
 
 
+LOGFILE="/home/pi/hflog/hfdl.log"
+
+# use tail -f /home/pi/hflog/hfdl.log to follow the output when the decoder is running
+
 
 #name for the frequency group
 fname=()
@@ -72,6 +76,8 @@ sleep 5
 sudo systemctl restart sdrplay
 sleep 5
 
+TMPLOG="/tmp/hfdl.sh.log.tmp"
+
 #edit the soapy driver, paths, IP address and port numbers below for your system as required
 dumpcmd=( /usr/local/bin/dumphfdl --statsd 192.168.1.156:8125 )
 dumpcmp+=( --soapysdr driver=sdrplay )
@@ -79,8 +85,8 @@ dumpcmp+=( --freq-as-squawk )
 dumpcmp+=( --system-table /home/pi/dumphfdl/etc/systable.conf )
 dumpcmp+=( --system-table-save /home/pi/dumphfdl/etc/systable-new.conf )
 dumpcmp+=( --output decoded:basestation:tcp:mode=server,address=192.168.1.109,port=30093 )
-dumpcmp+=( --output decoded:text:file:path=/home/pi/hflog/hf.log )
-dumpcmp+=( --output decoded:text:file:path=/home/pi/hflog/hfdl.log )
+dumpcmp+=( --output "decoded:text:file:path=$TMPLOG" )
+dumpcmp+=( --output "decoded:text:file:path=$LOGFILE")
 
 TIMEOUT="$1"
 if [[ -z "$TIMEOUT" ]]; then
@@ -94,15 +100,13 @@ for x in "${freq[@]}"
 do
     count+=(0)
     positions+=(0)
-    if [ -f "/home/pi/hflog/hf.log" ]; then
-        rm /home/pi/hflog/hf.log
-    fi
+    rm -f "$TMPLOG"
     timeoutcmd=(timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements "${gain[$i]}" --sample-rate "${samp[$i]}" "${freq[$i]}")
     echo "running: ${timeoutcmd[@]}"
     "${timeoutcmd[@]}" >/dev/null
-    if [ -f "/home/pi/hflog/hf.log" ]; then
-        count[$i]=`grep -c "kHz" /home/pi/hflog/hf.log`
-        positions[$i]=`grep -c "Lat:" /home/pi/hflog/hf.log`
+    if [[ -f "$TMPLOG" ]]; then
+        count[$i]=$(grep -c "kHz" "$TMPLOG")
+        positions[$i]=$(grep -c "Lat:" "$TMPLOG")
     fi
     echo ${fname[$i]} messageCount: ${count[$i]} positionCount: ${positions[$i]}
     (( i += 1 ))
