@@ -73,14 +73,14 @@ sudo systemctl restart sdrplay
 sleep 5
 
 #edit the soapy driver, paths, IP address and port numbers below for your system as required
-dumpcmd="/usr/local/bin/dumphfdl --statsd 192.168.1.156:8125 
---soapysdr driver=sdrplay \
-    --freq-as-squawk \
-    --system-table /home/pi/dumphfdl/etc/systable.conf \
-    --system-table-save /home/pi/dumphfdl/etc/systable-new.conf \
-    --output decoded:basestation:tcp:mode=server,address=192.168.1.109,port=30093 \
-    --output decoded:text:file:path=/home/pi/hflog/hf.log \
-    --output decoded:text:file:path=/home/pi/hflog/hfdl.log  "
+dumpcmd=( /usr/local/bin/dumphfdl --statsd 192.168.1.156:8125 )
+dumpcmp+=( --soapysdr driver=sdrplay )
+dumpcmp+=( --freq-as-squawk )
+dumpcmp+=( --system-table /home/pi/dumphfdl/etc/systable.conf )
+dumpcmp+=( --system-table-save /home/pi/dumphfdl/etc/systable-new.conf )
+dumpcmp+=( --output decoded:basestation:tcp:mode=server,address=192.168.1.109,port=30093 )
+dumpcmp+=( --output decoded:text:file:path=/home/pi/hflog/hf.log )
+dumpcmp+=( --output decoded:text:file:path=/home/pi/hflog/hfdl.log )
 
 TIMEOUT="$1"
 if [[ -z "$TIMEOUT" ]]; then
@@ -97,7 +97,9 @@ do
     if [ -f "/home/pi/hflog/hf.log" ]; then
         rm /home/pi/hflog/hf.log
     fi
-    timeout "$TIMEOUT" $dumpcmd --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} >/dev/null
+    timeoutcmd=(timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements "${gain[$i]}" --sample-rate "${samp[$i]}" "${freq[$i]}")
+    echo "running: ${timeoutcmd[@]}"
+    "${timeoutcmd[@]}" >/dev/null
     if [ -f "/home/pi/hflog/hf.log" ]; then
         count[$i]=`grep -c "kHz" /home/pi/hflog/hf.log`
         positions[$i]=`grep -c "Lat:" /home/pi/hflog/hf.log`
