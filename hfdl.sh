@@ -1,5 +1,7 @@
 #!/bin/bash
 
+trap 'echo "[ERROR] Error in line $LINENO when executing: $BASH_COMMAND"' ERR
+
 ##############################################################
 
 #finds the most-active frequencies currently in use by aircraft then runs dumphfdl using them. dumphfdl version 1.2.1 or higher is required
@@ -130,7 +132,7 @@ do
         positions[$i]=$(grep -c "Lat:" "$TMPLOG")
         score=$(( SPM * positions[$i]  + count[$i] ))
     fi
-    echo ${fname[$i]} messageCount: ${count[$i]} positionCount: ${positions[$i]}
+    echo "${fname[$i]} messageCount: ${count[$i]} positionCount: ${positions[$i]}"
     (( i += 1 ))
 done
 
