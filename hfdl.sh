@@ -81,24 +81,24 @@ sleep 5
 dumpcmd=( /usr/local/bin/dumphfdl )
 
 # edit the IP / port number of stats or add a # in front of the line to not use statsd
-dumpcmp=(--statsd 192.168.1.156:8125 )
+dumpcmd+=(--statsd 192.168.1.156:8125 )
 
 # edit the soapysdr driver as reuired
-dumpcmp+=( --soapysdr driver=sdrplay )
-dumpcmp+=( --freq-as-squawk )
+dumpcmd+=( --soapysdr driver=sdrplay )
+dumpcmd+=( --freq-as-squawk )
 
 # edit the systable path in the next two lines:
-dumpcmp+=( --system-table /home/pi/dumphfdl/etc/systable.conf )
-dumpcmp+=( --system-table-save /home/pi/dumphfdl/etc/systable-new.conf )
+dumpcmd+=( --system-table /home/pi/dumphfdl/etc/systable.conf )
+dumpcmd+=( --system-table-save /home/pi/dumphfdl/etc/systable-new.conf )
 
 # change IP and port of your VRS or whatever is consuming the basestation / SBS output:
-dumpcmp+=( --output decoded:basestation:tcp:mode=server,address=192.168.1.109,port=30093 )
+dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=192.168.1.109,port=30093 )
 
 # this shouldn't need changing
 TMPLOG="/tmp/hfdl.sh.log.tmp"
-dumpcmp+=( --output "decoded:text:file:path=$TMPLOG" )
+dumpcmd+=( --output "decoded:text:file:path=$TMPLOG" )
 # change the LOGFILE variable at the top to modify where the more permanent logfile is
-dumpcmp+=( --output "decoded:text:file:path=$LOGFILE")
+dumpcmd+=( --output "decoded:text:file:path=$LOGFILE")
 
 TIMEOUT="$1"
 if [[ -z "$TIMEOUT" ]]; then
