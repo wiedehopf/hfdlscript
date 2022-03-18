@@ -67,17 +67,6 @@ freq+=("21928 21931 21934 21937 21949 21955 21982 21990 21995 21997")
 samp+=("2000000")
 gain+=("IFGR=40,RFGR=2")
 
-
-#this kills any currently-running dumphfdl and tail tasks. (If you tail or multitail the hfdl.log, not killing tail tasks will leave several zombie tail processes running which could impact your computer's performance.)
-pkill -9 -f dumphfdl
-pkill -9 -f tail
-sleep 5
-
-#sdrplay api is sometimes unstable so this restarts it to be sure it's working. You will be prompted to enter your password.
-sudo systemctl restart sdrplay
-sleep 5
-
-
 # build the command line for dumphfdl
 dumpcmd=( /usr/local/bin/dumphfdl )
 
@@ -98,24 +87,52 @@ dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=127.0.0.1,port=2
 # output data into VRS, add # in front of the line to deactivate
 dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=127.0.0.1,port=20003 )
 
-# this shouldn't need changing
-TMPLOG="/tmp/hfdl.sh.log.tmp"
+# output data into experimental adsbexchange aggregation (not shown on main page for the moment)
+dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=feed.adsbexchange.com,port=32006 )
+
 dumpcmd+=( --output "decoded:text:file:path=$TMPLOG" )
 # change the LOGFILE variable at the top to modify where the more permanent logfile is
 dumpcmd+=( --output "decoded:text:file:path=$LOGFILE")
+
+# adjust position vs message weight
+# if you only care about positions, increase this to maybe 20?
+SPM=4
+
+
+
+
+
+
+
+# nothing beyond this point should need user changes
+
+
+
+
+trap 'echo "[ERROR] Error in line $LINENO when executing: $BASH_COMMAND"' ERR
+
+#this kills any currently-running dumphfdl and tail tasks. (If you tail or multitail the hfdl.log, not killing tail tasks will leave several zombie tail processes running which could impact your computer's performance.)
+pkill -9 -f dumphfdl || true
+pkill -9 -f tail || true
+sleep 5
+
+#sdrplay api is sometimes unstable so this restarts it to be sure it's working. You will be prompted to enter your password.
+sudo systemctl restart sdrplay
+sleep 5
+
+
 
 TIMEOUT="$1"
 if [[ -z "$TIMEOUT" ]]; then
     TIMEOUT=90
 fi
 
+# this shouldn't need changing
+TMPLOG="/tmp/hfdl.sh.log.tmp"
+
 count=()
 positions=()
 score=()
-
-# adjust position vs message weight
-# if you only care about positions, increase this to maybe 20?
-SPM=4
 
 i=0
 for x in "${freq[@]}"
@@ -126,7 +143,7 @@ do
     rm -f "$TMPLOG"
     timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} )
     echo "running: ${timeoutcmd[@]}"
-    "${timeoutcmd[@]}" >/dev/null
+    "${timeoutcmd[@]}" &> /dev/null || true
     if [[ -f "$TMPLOG" ]]; then
         count[$i]=$(grep -c "Src AC" "$TMPLOG")
         positions[$i]=$(grep -c "Lat:" "$TMPLOG")
@@ -165,5 +182,5 @@ echo "------"
 echo "Running: ${longcmd[@]}"
 echo "------"
 
-"${longcmd[@]}" & >/dev/null
+"${longcmd[@]}" >/dev/null &
 
