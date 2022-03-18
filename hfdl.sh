@@ -159,5 +159,5 @@ echo "Using ${fname[$x]}: gain-elements ${gain[$x]}, sample-rate ${samp[$x]}, fr
 
 #NOTE: if something is wrong with your script it will always default to using the first frequency array
 
-$dumpcmd --gain-elements ${gain[$x]} --sample-rate ${samp[$x]} ${freq[$x]} & >/dev/null
+"${dumpcmd[@]}" --gain-elements ${gain[$x]} --sample-rate ${samp[$x]} ${freq[$x]} & >/dev/null
 
