@@ -76,16 +76,28 @@ sleep 5
 sudo systemctl restart sdrplay
 sleep 5
 
-TMPLOG="/tmp/hfdl.sh.log.tmp"
 
-#edit the soapy driver, paths, IP address and port numbers below for your system as required
-dumpcmd=( /usr/local/bin/dumphfdl --statsd 192.168.1.156:8125 )
+# build the command line for dumphfdl
+dumpcmd=( /usr/local/bin/dumphfdl )
+
+# edit the IP / port number of stats or add a # in front of the line to not use statsd
+dumpcmp=(--statsd 192.168.1.156:8125 )
+
+# edit the soapysdr driver as reuired
 dumpcmp+=( --soapysdr driver=sdrplay )
 dumpcmp+=( --freq-as-squawk )
+
+# edit the systable path in the next two lines:
 dumpcmp+=( --system-table /home/pi/dumphfdl/etc/systable.conf )
 dumpcmp+=( --system-table-save /home/pi/dumphfdl/etc/systable-new.conf )
+
+# change IP and port of your VRS or whatever is consuming the basestation / SBS output:
 dumpcmp+=( --output decoded:basestation:tcp:mode=server,address=192.168.1.109,port=30093 )
+
+# this shouldn't need changing
+TMPLOG="/tmp/hfdl.sh.log.tmp"
 dumpcmp+=( --output "decoded:text:file:path=$TMPLOG" )
+# change the LOGFILE variable at the top to modify where the more permanent logfile is
 dumpcmp+=( --output "decoded:text:file:path=$LOGFILE")
 
 TIMEOUT="$1"
