@@ -66,7 +66,6 @@ samp+=("2000000")
 gain+=("IFGR=40,RFGR=2")
 
 
-
 #this kills any currently-running dumphfdl and tail tasks. (If you tail or multitail the hfdl.log, not killing tail tasks will leave several zombie tail processes running which could impact your computer's performance.)
 pkill -9 -f dumphfdl
 pkill -9 -f tail
@@ -105,20 +104,28 @@ if [[ -z "$TIMEOUT" ]]; then
     TIMEOUT=90
 fi
 
-i=0
 count=()
 positions=()
+score=()
+
+# adjust position vs message weight
+# if you only care about positions, increase this to maybe 20?
+SPM=4
+
+i=0
 for x in "${freq[@]}"
 do
     count+=(0)
     positions+=(0)
+    score+=(0)
     rm -f "$TMPLOG"
     timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} )
     echo "running: ${timeoutcmd[@]}"
     "${timeoutcmd[@]}" >/dev/null
     if [[ -f "$TMPLOG" ]]; then
-        count[$i]=$(grep -c "kHz" "$TMPLOG")
+        count[$i]=$(grep -c "Src AC" "$TMPLOG")
         positions[$i]=$(grep -c "Lat:" "$TMPLOG")
+        score=$(( SPM * positions[$i]  + count[$i] ))
     fi
     echo ${fname[$i]} messageCount: ${count[$i]} positionCount: ${positions[$i]}
     (( i += 1 ))
@@ -127,37 +134,31 @@ done
 j=0
 k=0
 
+
 i=0
 for x in "${freq[@]}"
 do
-    if (( ${count[$i]} > ${count[$j]} ))
+    if (( ${score[$i]} > ${score[$j]} ))
     then
         j=$i
     fi
-    if (( ${positions[$i]} > ${positions[$j]} ))
-    then
-        k=$i
-    fi
     (( i += 1 ))
 done
-echo Highest message count: ${fname[$j]} received "${count[$j]}" messages.
-echo Highest position count: ${fname[$k]} received "${positions[$k]}" positions.
-
-#end of testing for active frequencies
-
-if [ $k -gt 0 ]
-then
-    x=$k
-else
-    x=$j
-fi
+echo "Highest score of ${score[$j]}: ${fname[$j]} received ${positions[$j]} positions (x$SPM for score) and ${count[$j]} messages (x1 for score)."
 
 #Display the friendly name, gain elements, sample rate and active frequencies chosen by the script when running it manually in a terminal
-echo "Using ${fname[$x]}: gain-elements ${gain[$x]}, sample-rate ${samp[$x]}, frequencies ${freq[$x]}"
+echo "Using ${fname[$j]}: gain-elements ${gain[$j]}, sample-rate ${samp[$j]}, frequencies ${freq[$j]}"
 
 #this ends the script and runs dumphfdl using the above parameters and the most-acive frequency array using its gain reduction settings and sampling rate
 
 #NOTE: if something is wrong with your script it will always default to using the first frequency array
 
-"${dumpcmd[@]}" --gain-elements ${gain[$x]} --sample-rate ${samp[$x]} ${freq[$x]} & >/dev/null
+
+longcmd=( "${dumpcmd[@]}" --gain-elements ${gain[$j]} --sample-rate ${samp[$j]} ${freq[$j]} )
+
+echo "------"
+echo "Running: ${longcmd[@]}"
+echo "------"
+
+"${longcmd[@]}" & >/dev/null
 
