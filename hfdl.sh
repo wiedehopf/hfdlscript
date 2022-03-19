@@ -159,41 +159,40 @@ do
         score[$i]=$(( WEIGHT_POSITIONS * positions[$i]  + WEIGHT_AIRCRAFT * aircraftMessages[$i] + WEIGHT_GROUNDSTATION * stationMessages[$i] ))
     fi
     echo --------
-    echo -e "${fname[$i]}\t scored ${score[$i]}\tstationMessages: ${stationMessages[$i]}\taircraftMessages: ${aircraftMessages[$i]}\tpositions: ${positions[$i]}"
+    printf "%-20s%-15s%-25s%-26s%-18s\n" "${fname[$i]}" "score: ${score[$i]}" "stationMessages: ${stationMessages[$i]}" "aircraftMessages: ${aircraftMessages[$i]}" "positions: ${positions[$i]}"
     echo --------
     (( i += 1 ))
 done
-
-j=0
-k=0
 
 
 echo --------
 echo Summary:
 echo --------
 i=0
+k=0
 for x in "${freq[@]}"
 do
-    echo -e "${fname[$i]}\t scored ${score[$i]}\tstationMessages: ${stationMessages[$i]}\taircraftMessages: ${aircraftMessages[$i]}\tpositions: ${positions[$i]}"
-    if (( ${score[$i]} > ${score[$j]} ))
+    printf "%-20s%-15s%-25s%-26s%-18s\n" "${fname[$i]}" "score: ${score[$i]}" "stationMessages: ${stationMessages[$i]}" "aircraftMessages: ${aircraftMessages[$i]}" "positions: ${positions[$i]}"
+    if (( ${score[$i]} > ${score[$k]} ))
     then
-        j=$i
+        k=$i
     fi
     (( i += 1 ))
 done
 echo --------
-echo -e "${fname[$j]} wins with score ${score[$j]}\tstationMessages: ${stationMessages[$j]}\taircraftMessages: ${aircraftMessages[$j]}\tpositions: ${positions[$j]}"
+echo "${fname[$k]} wins"
+printf "%-20s%-15s%-25s%-26s%-18s\n" "${fname[$k]}" "score: ${score[$k]}" "stationMessages: ${stationMessages[$k]}" "aircraftMessages: ${aircraftMessages[$k]}" "positions: ${positions[$k]}"
 echo --------
 
 #Display the friendly name, gain elements, sample rate and active frequencies chosen by the script when running it manually in a terminal
-echo "Using ${fname[$j]}: gain-elements ${gain[$j]}, sample-rate ${samp[$j]}, frequencies ${freq[$j]}"
+echo "Using ${fname[$k]}: gain-elements ${gain[$k]}, sample-rate ${samp[$k]}, frequencies ${freq[$k]}"
 
 #this ends the script and runs dumphfdl using the above parameters and the most-acive frequency array using its gain reduction settings and sampling rate
 
 #NOTE: if something is wrong with your script it will always default to using the first frequency array
 
 
-longcmd=( "${dumpcmd[@]}" --gain-elements ${gain[$j]} --sample-rate ${samp[$j]} ${freq[$j]} )
+longcmd=( "${dumpcmd[@]}" --gain-elements ${gain[$k]} --sample-rate ${samp[$k]} ${freq[$k]} )
 
 echo "------"
 echo "Running: ${longcmd[@]}"
