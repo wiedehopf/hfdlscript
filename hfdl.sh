@@ -148,7 +148,8 @@ do
     "${timeoutcmd[@]}" || true
     if [[ -f "$TMPLOG" ]]; then
         cat "$TMPLOG"
-        count[$i]=$(grep -c "Src AC" "$TMPLOG" || true)
+        #count[$i]=$(grep -c "Src AC" "$TMPLOG" || true)
+        count[$i]=$(grep -c "kHz" "$TMPLOG" || true)
         positions[$i]=$(grep -c "Lat:" "$TMPLOG" || true)
         score=$(( SPM * positions[$i]  + count[$i] ))
     fi
