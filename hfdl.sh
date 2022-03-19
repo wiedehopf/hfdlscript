@@ -144,11 +144,12 @@ do
     score+=(0)
     rm -f "$TMPLOG"
     timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} --output "decoded:text:file:path=$TMPLOG" )
-    #echo "running: ${timeoutcmd[@]}"
+    echo "running: ${timeoutcmd[@]}"
     "${timeoutcmd[@]}" || true
     if [[ -f "$TMPLOG" ]]; then
-        count[$i]=$(grep -c "Src AC" "$TMPLOG")
-        positions[$i]=$(grep -c "Lat:" "$TMPLOG")
+        cat "$TMPLOG"
+        count[$i]=$(grep -c "Src AC" "$TMPLOG" || true)
+        positions[$i]=$(grep -c "Lat:" "$TMPLOG" || true)
         score=$(( SPM * positions[$i]  + count[$i] ))
     fi
     echo --------
