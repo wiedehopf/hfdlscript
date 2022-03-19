@@ -90,14 +90,18 @@ dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=127.0.0.1,port=2
 dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=127.0.0.1,port=20003 )
 
 # output data into experimental adsbexchange aggregation (not shown on main page for the moment)
-dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=feed.adsbexchange.com,port=32006 )
+dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=feed.adsbexchange.com,port=32600 )
 
 # change the LOGFILE variable at the top to modify where the more permanent logfile is
 dumpcmd+=( --output "decoded:text:file:path=$LOGFILE")
 
-# adjust position vs message weight
-# if you only care about positions, increase this to maybe 20?
-SPM=4
+# adjust scoring weigths
+WEIGHT_POSITIONS=40
+WEIGHT_AIRCRAFT=10
+WEIGHT_GROUNDSTATION=1
+
+
+
 
 
 
@@ -131,15 +135,17 @@ fi
 # this shouldn't need changing
 TMPLOG="/tmp/hfdl.sh.log.tmp"
 
-count=()
+aircraftMessages=()
 positions=()
+stationMessages=()
 score=()
 
 echo --------
 i=0
 for x in "${freq[@]}"
 do
-    count+=(0)
+    aircraftMessages+=(0)
+    stationMessages+=(0)
     positions+=(0)
     score+=(0)
     rm -f "$TMPLOG"
@@ -147,14 +153,13 @@ do
     echo "running: ${timeoutcmd[@]}"
     "${timeoutcmd[@]}" || true
     if [[ -f "$TMPLOG" ]]; then
-        cat "$TMPLOG"
-        #count[$i]=$(grep -c "Src AC" "$TMPLOG" || true)
-        count[$i]=$(grep -c "kHz" "$TMPLOG" || true)
+        stationMessages[$i]=$(grep -c "Src GS" "$TMPLOG" || true)
+        aircraftMessages[$i]=$(grep -c "Src AC" "$TMPLOG" || true)
         positions[$i]=$(grep -c "Lat:" "$TMPLOG" || true)
-        score=$(( SPM * positions[$i]  + count[$i] ))
+        score=$(( WEIGHT_POSITIONS * positions[$i]  + WEIGHT_AIRCRAFT * aircraftMessages[$i] + WEIGHT_GROUNDSTATION * stationMessages[$i] ))
     fi
     echo --------
-    echo -e "${fname[$i]}\tmessageCount: ${count[$i]}\tpositionCount: ${positions[$i]}"
+    echo -e "${fname[$i]}\t scored ${score[$i]}\tstationMessages: ${stationMessages[$i]}\taircraftMessages: ${aircraftMessages[$i]}\tpositions: ${positions[$i]}"
     echo --------
     (( i += 1 ))
 done
@@ -169,14 +174,16 @@ echo --------
 i=0
 for x in "${freq[@]}"
 do
-    echo -e "${fname[$i]}\tmessageCount: ${count[$i]}\tpositionCount: ${positions[$i]}"
+    echo -e "${fname[$i]}\t scored ${score[$i]}\tstationMessages: ${stationMessages[$i]}\taircraftMessages: ${aircraftMessages[$i]}\tpositions: ${positions[$i]}"
     if (( ${score[$i]} > ${score[$j]} ))
     then
         j=$i
     fi
     (( i += 1 ))
 done
-echo "Highest score of ${score[$j]}: ${fname[$j]} received ${positions[$j]} positions (x$SPM for score) and ${count[$j]} messages (x1 for score)."
+echo --------
+echo -e "${fname[$i]} wins with score ${score[$i]}\tstationMessages: ${stationMessages[$i]}\taircraftMessages: ${aircraftMessages[$i]}\tpositions: ${positions[$i]}"
+echo --------
 
 #Display the friendly name, gain elements, sample rate and active frequencies chosen by the script when running it manually in a terminal
 echo "Using ${fname[$j]}: gain-elements ${gain[$j]}, sample-rate ${samp[$j]}, frequencies ${freq[$j]}"
