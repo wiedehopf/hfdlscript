@@ -161,9 +161,13 @@ j=0
 k=0
 
 
+echo --------
+echo Summary:
+echo --------
 i=0
 for x in "${freq[@]}"
 do
+    echo -e "${fname[$i]}\tmessageCount: ${count[$i]}\tpositionCount: ${positions[$i]}"
     if (( ${score[$i]} > ${score[$j]} ))
     then
         j=$i
