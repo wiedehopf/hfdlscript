@@ -19,6 +19,9 @@ trap 'echo "[ERROR] Error in line $LINENO when executing: $BASH_COMMAND"' ERR
 
 LOGFILE="/home/pi/hflog/hfdl.log"
 ERRORLOG="/home/pi/hflog/hfdl.error.log"
+# this shouldn't need changing
+TMPLOG="/tmp/hfdl.sh.log.tmp"
+
 
 # use tail -f /home/pi/hflog/hfdl.log to follow the output when the decoder is running
 
@@ -127,9 +130,6 @@ TIMEOUT="$1"
 if [[ -z "$TIMEOUT" ]]; then
     TIMEOUT=90
 fi
-
-# this shouldn't need changing
-TMPLOG="/tmp/hfdl.sh.log.tmp"
 
 count=()
 positions=()
