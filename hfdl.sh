@@ -156,7 +156,7 @@ do
         stationMessages[$i]=$(grep -c "Src GS" "$TMPLOG" || true)
         aircraftMessages[$i]=$(grep -c "Src AC" "$TMPLOG" || true)
         positions[$i]=$(grep -c "Lat:" "$TMPLOG" || true)
-        score=$(( WEIGHT_POSITIONS * positions[$i]  + WEIGHT_AIRCRAFT * aircraftMessages[$i] + WEIGHT_GROUNDSTATION * stationMessages[$i] ))
+        score[$i]=$(( WEIGHT_POSITIONS * positions[$i]  + WEIGHT_AIRCRAFT * aircraftMessages[$i] + WEIGHT_GROUNDSTATION * stationMessages[$i] ))
     fi
     echo --------
     echo -e "${fname[$i]}\t scored ${score[$i]}\tstationMessages: ${stationMessages[$i]}\taircraftMessages: ${aircraftMessages[$i]}\tpositions: ${positions[$i]}"
@@ -182,7 +182,7 @@ do
     (( i += 1 ))
 done
 echo --------
-echo -e "${fname[$i]} wins with score ${score[$i]}\tstationMessages: ${stationMessages[$i]}\taircraftMessages: ${aircraftMessages[$i]}\tpositions: ${positions[$i]}"
+echo -e "${fname[$j]} wins with score ${score[$j]}\tstationMessages: ${stationMessages[$j]}\taircraftMessages: ${aircraftMessages[$j]}\tpositions: ${positions[$j]}"
 echo --------
 
 #Display the friendly name, gain elements, sample rate and active frequencies chosen by the script when running it manually in a terminal
