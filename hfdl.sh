@@ -19,8 +19,6 @@ trap 'echo "[ERROR] Error in line $LINENO when executing: $BASH_COMMAND"' ERR
 
 LOGFILE="/home/pi/hflog/hfdl.log"
 ERRORLOG="/home/pi/hflog/hfdl.error.log"
-# this shouldn't need changing
-TMPLOG="/tmp/hfdl.sh.log.tmp"
 
 
 # use tail -f /home/pi/hflog/hfdl.log to follow the output when the decoder is running
@@ -94,7 +92,6 @@ dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=127.0.0.1,port=2
 # output data into experimental adsbexchange aggregation (not shown on main page for the moment)
 dumpcmd+=( --output decoded:basestation:tcp:mode=server,address=feed.adsbexchange.com,port=32006 )
 
-dumpcmd+=( --output "decoded:text:file:path=$TMPLOG" )
 # change the LOGFILE variable at the top to modify where the more permanent logfile is
 dumpcmd+=( --output "decoded:text:file:path=$LOGFILE")
 
@@ -131,6 +128,9 @@ if [[ -z "$TIMEOUT" ]]; then
     TIMEOUT=90
 fi
 
+# this shouldn't need changing
+TMPLOG="/tmp/hfdl.sh.log.tmp"
+
 count=()
 positions=()
 score=()
@@ -143,7 +143,7 @@ do
     positions+=(0)
     score+=(0)
     rm -f "$TMPLOG"
-    timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} )
+    timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} --output "decoded:text:file:path=$TMPLOG" )
     #echo "running: ${timeoutcmd[@]}"
     "${timeoutcmd[@]}" &> /dev/null || true
     if [[ -f "$TMPLOG" ]]; then
