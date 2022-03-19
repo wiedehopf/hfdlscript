@@ -145,12 +145,13 @@ do
     rm -f "$TMPLOG"
     timeoutcmd=( timeout "$TIMEOUT" "${dumpcmd[@]}" --gain-elements ${gain[$i]} --sample-rate ${samp[$i]} ${freq[$i]} --output "decoded:text:file:path=$TMPLOG" )
     #echo "running: ${timeoutcmd[@]}"
-    "${timeoutcmd[@]}" &> /dev/null || true
+    "${timeoutcmd[@]}" || true
     if [[ -f "$TMPLOG" ]]; then
         count[$i]=$(grep -c "Src AC" "$TMPLOG")
         positions[$i]=$(grep -c "Lat:" "$TMPLOG")
         score=$(( SPM * positions[$i]  + count[$i] ))
     fi
+    echo --------
     echo -e "${fname[$i]}\tmessageCount: ${count[$i]}\tpositionCount: ${positions[$i]}"
     echo --------
     (( i += 1 ))
